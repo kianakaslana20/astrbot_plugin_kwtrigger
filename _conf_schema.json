@@ -1,0 +1,186 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "总开关",
+    "default": true,
+    "hint": "关掉后所有规则都不生效，等价于卸载"
+  },
+  "dry_run": {
+    "type": "bool",
+    "description": "干跑模式（只记日志不真发）",
+    "default": false,
+    "hint": "调规则时打开，避免真发出语音"
+  },
+  "admin_only": {
+    "type": "bool",
+    "description": "仅管理员触发",
+    "default": true,
+    "hint": "关掉则所有会话用户都能触发规则（规则里也有单独的 admin_only）"
+  },
+  "builtin_rules": {
+    "type": "bool",
+    "description": "启用内置规则",
+    "default": true,
+    "hint": "内置两条：念文案（直发语音、跳过模型）、语音回复（念模型回复）。关掉后只用你在下面加的规则"
+  },
+  "rules": {
+    "type": "template_list",
+    "description": "规则表",
+    "default": [],
+    "templates": {
+      "rule": {
+        "name": "规则",
+        "items": {
+          "name": {
+            "type": "string",
+            "description": "规则名（用于 /kw 测试 与日志）",
+            "default": "新规则"
+          },
+          "enabled": {
+            "type": "bool",
+            "description": "启用这条规则",
+            "default": true
+          },
+          "priority": {
+            "type": "int",
+            "description": "优先级（大的先算，只影响命中顺序）",
+            "default": 100
+          },
+          "action": {
+            "type": "string",
+            "description": "动作类型",
+            "default": "tts",
+            "options": ["tts", "prompt", "reply", "tool", "cmd"],
+            "hint": "tts=发语音｜prompt=追加系统提示｜reply=固定回复｜tool=强制工具｜cmd=投指令"
+          },
+          "match": {
+            "type": "string",
+            "description": "触发词匹配方式",
+            "default": "any",
+            "options": ["any", "all", "regex_only", "always"],
+            "hint": "any=任一触发词｜all=全部出现｜regex_only=只认正则｜always=无条件"
+          },
+          "keywords": {
+            "type": "list",
+            "description": "触发词",
+            "default": [],
+            "items": {"type": "string"},
+            "hint": "不区分大小写，逐个做子串匹配"
+          },
+          "regex": {
+            "type": "string",
+            "description": "正则（可选）",
+            "default": "",
+            "hint": "Python 正则；与触发词是「或」的关系（match=regex_only 时只认正则）"
+          },
+          "tts_source": {
+            "type": "string",
+            "description": "语音念哪里（action=tts）",
+            "default": "message",
+            "options": ["message", "whole", "reply"],
+            "hint": "message=触发词之后的原文（不经过模型）｜whole=整条消息｜reply=模型回复"
+          },
+          "delivery": {
+            "type": "string",
+            "description": "投递方式（action=tts，来源=reply 时生效）",
+            "default": "voice_only",
+            "options": ["voice_only", "voice_and_text"],
+            "hint": "voice_only=只发语音｜voice_and_text=文字+语音都发"
+          },
+          "chunk": {
+            "type": "int",
+            "description": "长文分段字数",
+            "default": 0,
+            "hint": "0=不切；建议 100~150，一条语音太长容易失败"
+          },
+          "skip_llm": {
+            "type": "bool",
+            "description": "发完语音就不调模型",
+            "default": false,
+            "hint": "来源=message 时建议打开：省一次模型调用，也不会被模型改口"
+          },
+          "prompt_text": {
+            "type": "text",
+            "description": "追加的系统提示（action=prompt）",
+            "default": ""
+          },
+          "reply_text": {
+            "type": "text",
+            "description": "固定回复内容（action=reply）",
+            "default": "",
+            "hint": "可用变量：{payload}=触发词之后的原文，{user}=发送者 ID"
+          },
+          "tool_name": {
+            "type": "string",
+            "description": "工具名（action=tool）",
+            "default": ""
+          },
+          "cmd": {
+            "type": "string",
+            "description": "要投出去的指令（action=cmd）",
+            "default": ""
+          },
+          "sessions": {
+            "type": "list",
+            "description": "只在这些会话生效",
+            "default": [],
+            "items": {"type": "string"},
+            "hint": "留空=全部会话；格式如 aiocqhttp:FriendMessage:123456"
+          },
+          "platforms": {
+            "type": "list",
+            "description": "只在这些平台生效",
+            "default": [],
+            "items": {"type": "string"},
+            "hint": "留空=全部平台；如 aiocqhttp / webchat"
+          },
+          "admin_only": {
+            "type": "bool",
+            "description": "这条规则仅管理员可触发",
+            "default": false
+          }
+        }
+      }
+    }
+  },
+  "tts_timeout": {
+    "type": "int",
+    "description": "单段语音合成超时（秒）",
+    "default": 120,
+    "hint": "超过就走降级：保留文字并记日志"
+  },
+  "max_chars": {
+    "type": "int",
+    "description": "单次合成字数上限",
+    "default": 2000,
+    "hint": "超长文本会被截断，避免一次合成几分钟音频"
+  },
+  "fallback_to_text": {
+    "type": "bool",
+    "description": "合成失败时回退给模型正常回复",
+    "default": true
+  },
+  "dedupe_existing_record": {
+    "type": "bool",
+    "description": "消息链里已有语音就跳过",
+    "default": true,
+    "hint": "防止和别的插件的语音功能重复发两份"
+  },
+  "blacklist_sessions": {
+    "type": "list",
+    "description": "在这些会话不生效",
+    "default": [],
+    "items": {"type": "string"}
+  },
+  "whitelist_sessions": {
+    "type": "list",
+    "description": "只在这些会话生效",
+    "default": [],
+    "items": {"type": "string"}
+  },
+  "debug": {
+    "type": "bool",
+    "description": "调试日志",
+    "default": false
+  }
+}

@@ -1,0 +1,21 @@
+﻿name: astrbot_plugin_kwtrigger
+display_name: 关键词触发器
+short_desc: 命令里出现指定触发词就强制执行指定动作：念文案/发语音、追加提示词、固定回复、强制工具、投指令。
+desc: 用规则表把「用户说的某个词」直接映射成「某个动作」，不再指望模型记得住。核心场景是把念文案变成确定行为：命中触发词后直接调 TTS 合成语音发出去（可选跳过模型），或把模型回复整段转成语音。
+help: |
+  /kw 状态        查看开关、干跑模式与规则清单
+  /kw 列表        列出全部规则
+  /kw 测试 <文本>  看一段文本会命中哪些规则、取到哪段内容
+  /kw 开 | 关     临时启停
+  /kw 干跑 on|off 只记日志不真发（调规则时用）
+  /kw 重载        改完配置后热重载
+version: 1.0.0
+author: YG
+repo: https://github.com/kianakaslana20/astrbot_plugin_kwtrigger
+astrbot_version: ">=4.17.0"
+tags:
+  - 关键词
+  - 触发器
+  - TTS
+  - 语音
+  - 自动化
